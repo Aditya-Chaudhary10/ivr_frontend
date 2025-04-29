@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎙️ Novah Voice Assistant</title>
+    <style>
+        :root {
+            --primary-color: #4287f5;
+            --secondary-color: #34d399;
+            --background-color: #f9fafb;
+            --text-color: #1f2937;
+            --light-gray: #f3f4f6;
+            --border-color: #e5e7eb;
+            --success-color: #10b981;
+            --info-color: #3b82f6;
+            --warning-color: #f59e0b;
+            --error-color: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+
+        .language-selector {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .language-selector select {
+            margin-left: 10px;
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid var(--border-color);
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .record-btn {
+            background-color: var(--primary-color);
+            color: white;
+            flex: 1;
+            margin-right: 10px;
+        }
+
+        .record-btn.recording {
+            background-color: var(--error-color);
+            animation: pulse 1.5s infinite;
+        }
+
+        .reset-btn {
+            background-color: #6b7280;
+            color: white;
+            flex: 1;
+            margin-left: 10px;
+        }
+
+        .speak-btn {
+            background-color: var(--secondary-color);
+            color: white;
+            margin-top: 10px;
+        }
+
+        .save-btn {
+            background-color: var(--info-color);
+            color: white;
+            width: 100%;
+            margin-top: 15px;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+
+        .icon {
+            margin-right: 8px;
+        }
+
+        .status-container {
+            min-height: 60px;
+            margin-bottom: 20px;
+            padding: 10px;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+        }
+
+        .wave-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 30px;
+            margin-right: 10px;
+        }
+
+        .wave-bar {
+            background: linear-gradient(to bottom, var(--primary-color), #6fa5ff);
+            width: 4px;
+            height: 5px;
+            margin: 0 2px;
+            border-radius: 2px;
+            animation: wave 0.5s infinite ease-in-out alternate;
+        }
+
+        @keyframes wave {
+            0% {height: 5px;}
+            100% {height: 25px;}
+        }
+
+        @keyframes pulse {
+            0% {transform: scale(0.98); opacity: 0.8;}
+            50% {transform: scale(1.02); opacity: 1;}
+            100% {transform: scale(0.98); opacity: 0.8;}
+        }
+
+        .loading-dots {
+            display: inline-flex;
+            margin-left: 10px;
+        }
+
+        .loading-dots div {
+            width: 8px;
+            height: 8px;
+            margin: 0 4px;
+            border-radius: 50%;
+            background-color: var(--warning-color);
+            animation: loading 0.6s infinite alternate;
+        }
+
+        .loading-dots div:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .loading-dots div:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes loading {
+            0% {transform: scale(0.8); opacity: 0.5;}
+            100% {transform: scale(1.2); opacity: 1;}
+        }
+
+        .chat-container {
+            margin-bottom: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            background-color: white;
+        }
+
+        .message {
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+
+        .user-message {
+            background-color: var(--light-gray);
+            margin-left: 20px;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .assistant-message {
+            background-color: #e0f7fa;
+            margin-right: 20px;
+            border-left: 4px solid var(--secondary-color);
+        }
+
+        .message-header {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .audio-player {
+            margin-bottom: 20px;
+        }
+
+        .audio-player audio {
+            width: 100%;
+            border-radius: 5px;
+        }
+
+        .settings {
+            background-color: white;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid var(--border-color);
+        }
+
+        .settings h3 {
+            margin-bottom: 10px;
+            color: var(--primary-color);
+        }
+
+        .setting-item {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        .setting-item label {
+            min-width: 80px;
+        }
+
+        .setting-item select,
+        .setting-item input {
+            flex: 1;
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid var(--border-color);
+        }
+
+        .setting-item span {
+            margin-left: 10px;
+            min-width: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎙️ Novah Voice Assistant</h1>
+            <p class="subtitle">Powered by Groq + LLaMA 3.3 70B</p>
+        </header>
+
+        <div class="language-selector">
+            <label for="language">Language:</label>
+            <select id="language">
+                <option value="en">English</option>
+                <option value="hi">Hindi</option>
+            </select>
+        </div>
+
+        <div class="controls">
+            <button id="recordButton" class="btn record-btn">
+                <span class="icon">🎙️</span> Record
+            </button>
+            <button id="resetButton" class="btn reset-btn">
+                <span class="icon">🔄</span> Reset
+            </button>
+        </div>
+
+        <div id="status" class="status-container"></div>
+
+        <div class="chat-container" id="chatContainer">
+            <!-- Chat messages will appear here -->
+        </div>
+
+        <div class="audio-player">
+            <audio id="audioPlayback" controls></audio>
+            <button id="speakButton" class="btn speak-btn" style="display: none;">
+                <span class="icon">🔊</span> Listen
+            </button>
+        </div>
+
+        <div class="settings">
+            <h3>Voice Settings</h3>
+            <div class="setting-item">
+                <label for="speed">Speed:</label>
+                <select id="speed">
+                    <option value="0.75">Slow</option>
+                    <option value="1.0" selected>Normal</option>
+                    <option value="1.25">Fast</option>
+                    <option value="1.5">Very Fast</option>
+                </select>
+            </div>
+            <div class="setting-item">
+                <label for="volume">Volume:</label>
+                <input type="range" id="volume" min="0.5" max="2.0" step="0.1" value="1.0">
+                <span id="volumeValue">1.0</span>
+            </div>
+            <button id="saveButton" class="btn save-btn">
+                <span class="icon">💾</span> Save Conversation
+            </button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // DOM Elements
+            const recordButton = document.getElementById('recordButton');
+            const resetButton = document.getElementById('resetButton');
+            const speakButton = document.getElementById('speakButton');
+            const saveButton = document.getElementById('saveButton');
+            const languageSelect = document.getElementById('language');
+            const speedSelect = document.getElementById('speed');
+            const volumeInput = document.getElementById('volume');
+            const volumeValue = document.getElementById('volumeValue');
+            const audioPlayback = document.getElementById('audioPlayback');
+            const chatContainer = document.getElementById('chatContainer');
+            const statusContainer = document.getElementById('status');
+
+            // State variables
+            let mediaRecorder;
+            let audioChunks = [];
+            let isRecording = false;
+            let messages = [{
+                "role": "system",
+                "content": "You are a helpful voice assistant that can respond in multiple languages. Keep your responses concise for easier listening."
+            }];
+            let lastResponse = "";
+
+            // Update volume display
+            volumeInput.addEventListener('input', function() {
+                volumeValue.textContent = this.value;
+            });
+
+            // Record button click handler
+            recordButton.addEventListener('click', async function() {
+                if (isRecording) {
+                    stopRecording();
+                } else {
+                    await startRecording();
+                }
+            });
+
+            // Reset button click handler
+            resetButton.addEventListener('click', function() {
+                messages = [{
+                    "role": "system",
+                    "content": "You are a helpful voice assistant that can respond in multiple languages. Keep your responses concise for easier listening."
+                }];
+                chatContainer.innerHTML = '';
+                speakButton.style.display = 'none';
+                statusContainer.innerHTML = '';
+                audioPlayback.src = '';
+            });
+
+            // Speak button click handler
+            speakButton.addEventListener('click', async function() {
+                const lang = languageSelect.value;
+                const speed = speedSelect.value;
+                const volume = volumeInput.value;
+                
+                try {
+                    showStatus('Generating speech...', 'loading');
+                    
+                    // In a real app, you would send this to your backend
+                    // For demo purposes, we'll use browser's built-in speech synthesis
+                    const utterance = new SpeechSynthesisUtterance(lastResponse);
+                    utterance.lang = lang === 'hi' ? 'hi-IN' : 'en-US';
+                    utterance.rate = parseFloat(speed);
+                    utterance.volume = parseFloat(volume);
+                    
+                    utterance.onend = function() {
+                        clearStatus();
+                    };
+                    
+                    speechSynthesis.speak(utterance);
+                } catch (error) {
+                    showStatus('Speech generation failed: ' + error.message, 'error');
+                    console.error('Speech generation error:', error);
+                }
+            });
+
+            // Save button click handler
+            saveButton.addEventListener('click', function() {
+                if (messages.length <= 1) {
+                    showStatus('No conversation to save', 'warning');
+                    return;
+                }
+                
+                const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+                const filename = `conversation_${timestamp}.json`;
+                const json = JSON.stringify(messages, null, 2);
+                const blob = new Blob([json], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                
+                showStatus('Conversation saved!', 'success');
+            });
+
+            // Start recording function
+            async function startRecording() {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    mediaRecorder = new MediaRecorder(stream);
+                    audioChunks = [];
+                    
+                    mediaRecorder.ondataavailable = (event) => {
+                        audioChunks.push(event.data);
+                    };
+                    
+                    mediaRecorder.onstop = processAudio;
+                    
+                    mediaRecorder.start();
+                    isRecording = true;
+                    recordButton.textContent = '⏹️ Stop';
+                    recordButton.classList.add('recording');
+                    
+                    // Show recording animation
+                    const langDisplay = languageSelect.options[languageSelect.selectedIndex].text;
+                    showRecordingAnimation(langDisplay);
+                    
+                } catch (error) {
+                    showStatus('Microphone access denied or not available', 'error');
+                    console.error('Recording error:', error);
+                }
+            }
+
+            // Stop recording function
+            function stopRecording() {
+                if (mediaRecorder && isRecording) {
+                    mediaRecorder.stop();
+                    isRecording = false;
+                    recordButton.textContent = '🎙️ Record';
+                    recordButton.classList.remove('recording');
+                    
+                    // Stop all tracks in the stream
+                    mediaRecorder.stream.getTracks().forEach(track => track.stop());
+                }
+            }
+
+            // Process recorded audio
+            async function processAudio() {
+                showStatus('Processing audio...', 'loading');
+                
+                const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                const audioUrl = URL.createObjectURL(audioBlob);
+                audioPlayback.src = audioUrl;
+                
+                // In a real app, you would send this to your backend for transcription
+                // For demo purposes, we'll simulate transcription
+                try {
+                    // Simulate sending to backend for transcription
+                    // In a real app, you would use fetch to send to your server
+                    await simulateTranscription(audioBlob);
+                } catch (error) {
+                    showStatus('Transcription failed: ' + error.message, 'error');
+                    console.error('Transcription error:', error);
+                }
+            }
+
+            // Simulate transcription and LLM response (in a real app, this would be a server call)
+            async function simulateTranscription(audioBlob) {
+                showStatus('Transcribing...', 'loading');
+                
+                // Simulate network delay
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                
+                // Simulate a transcription result
+                const transcription = "This is a simulated transcription. In a real app, your audio would be sent to a server for processing with Whisper.";
+                
+                // Add user message to chat
+                addMessage('user', transcription);
+                
+                // Add to messages array
+                messages.push({
+                    "role": "user",
+                    "content": transcription
+                });
+                
+                // Now simulate getting a response from LLM
+                await simulateLLMResponse();
+            }
+
+            // Simulate LLM response
+            async function simulateLLMResponse() {
+                showStatus('Getting response from LLaMA 3.3 70B...', 'loading');
+                
+                // Simulate network delay
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                // Simulate an LLM response
+                const response = "This is a simulated response from the language model. In a real implementation, this would come from your backend server that calls the Groq API with your conversation history.";
+                
+                // Add assistant message to chat
+                addMessage('assistant', response);
+                
+                // Add to messages array
+                messages.push({
+                    "role": "assistant",
+                    "content": response
+                });
+                
+                // Save last response for TTS
+                lastResponse = response;
+                
+                // Show speak button
+                speakButton.style.display = 'block';
+                
+                // Clear status
+                clearStatus();
+            }
+
+            // Add message to chat
+            function addMessage(role, content) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${role}-message`;
+                
+                const header = document.createElement('div');
+                header.className = 'message-header';
+                header.textContent = role === 'user' ? '👤 You:' : '🤖 Assistant:';
+                
+                const text = document.createElement('div');
+                text.textContent = content;
+                
+                messageDiv.appendChild(header);
+                messageDiv.appendChild(text);
+                chatContainer.appendChild(messageDiv);
+                
+                // Auto scroll to bottom
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }
+
+            // Show recording animation
+            function showRecordingAnimation(language) {
+                let html = '<div style="display:flex;align-items:center;"><div class="wave-container">';
+                for (let i = 0; i < 5; i++) {
+                    const delay = i * 0.1;
+                    html += `<div class="wave-bar" style="animation-delay: ${delay}s"></div>`;
+                }
+                html += `</div><span style="margin-left:10px">🎤 Listening... Speak now in ${language}!</span></div>`;
+                statusContainer.innerHTML = html;
+            }
+
+            // Show status message
+            function showStatus(message, type) {
+                let html = '';
+                
+                if (type === 'loading') {
+                    html = `
+                        <div style="display:flex;align-items:center;">
+                            <span>${message}</span>
+                            <div class="loading-dots">
+                                <div></div><div></div><div></div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    const icon = type === 'error' ? '❌' : 
+                                type === 'warning' ? '⚠️' : 
+                                type === 'success' ? '✅' : 'ℹ️';
+                    
+                    html = `<div style="color: ${getColorForType(type)}">${icon} ${message}</div>`;
+                }
+                
+                statusContainer.innerHTML = html;
+            }
+
+            // Get color for status type
+            function getColorForType(type) {
+                switch (type) {
+                    case 'error': return 'var(--error-color)';
+                    case 'warning': return 'var(--warning-color)';
+                    case 'success': return 'var(--success-color)';
+                    default: return 'var(--info-color)';
+                }
+            }
+
+            // Clear status
+            function clearStatus() {
+                statusContainer.innerHTML = '';
+            }
+        });
+    </script>
+</body>
+</html>
