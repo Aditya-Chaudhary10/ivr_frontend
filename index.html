@@ -758,7 +758,7 @@
                 formData.append('volume', volumeInput.value);
 
                 try {
-                    const response = await fetch('http://localhost:8000/process-speech', {
+                    const response = await fetch('http://65.1.222.81:8000/process-speech', {
                         method: 'POST',
                         body: formData
                     });
